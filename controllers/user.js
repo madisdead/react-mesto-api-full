@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { NODE_ENV, JWT_SECRET } = process.env;
-const NotFoundError = require('./errors/not-found-err');
+const NotFoundError = require('../errors/not-found-err.js');
 
 module.exports.getUsers = (req, res) => {
   User.find({})

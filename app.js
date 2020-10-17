@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const routerUsers = require('./routes/users.js');
 const routerCards = require('./routes/cards.js');
-const { createUser, login } = require('../controllers/user');
+const { createUser, login } = require('./controllers/user');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
@@ -34,8 +34,6 @@ app.use('*', (req, res) => {
 });
 
 app.use(errorLogger);
-
-app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

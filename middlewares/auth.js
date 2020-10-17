@@ -25,10 +25,10 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    const err = new Error('Необходима авторизация');
-    err.statusCode = 401;
+    const error = new Error('Необходима авторизация');
+    error.statusCode = 401;
 
-    next(err);
+    next(error);
   }
 
   req.user = payload;
