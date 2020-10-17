@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const routerUsers = require('./routes/users.js');
 const routerCards = require('./routes/cards.js');
+const { createUser, login } = require('../controllers/user');
+const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 
@@ -17,19 +20,33 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5f65bb160b83f842d010945e',
-  };
+app.use(requestLogger);
 
-  next();
-});
-app.use('/users', routerUsers);
-app.use('/cards', routerCards);
+app.post('/signin', login);
+app.post('/signup', createUser);
+
+app.use('/users', auth, routerUsers);
+app.use('/cards', auth, routerCards);
 
 app.use('*', (req, res) => {
   res.status(404);
   res.send({ message: 'Запрашиваемый ресурс не найден' });
+});
+
+app.use(errorLogger);
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message
+    });
 });
 
 app.listen(PORT, () => {
