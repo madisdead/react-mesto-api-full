@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const routerUsers = require('./routes/users.js');
 const routerCards = require('./routes/cards.js');
 const { createUser, login } = require('./controllers/user');
@@ -41,7 +42,9 @@ app.use('*', (req, res) => {
 
 app.use(errorLogger);
 
-app.use((err, req, res, next) => {
+app.use(errors());
+
+app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
 
   res
@@ -49,7 +52,7 @@ app.use((err, req, res, next) => {
     .send({
       message: statusCode === 500
         ? 'На сервере произошла ошибка'
-        : message
+        : message,
     });
 });
 

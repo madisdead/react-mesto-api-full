@@ -19,9 +19,16 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.removeCard = (req, res) => {
-  Card.findByIdAndRemove(req.params._id)
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  Card.findById(req.params._id)
+    .then((card) => {
+      if (card.owner !== req.user._id) {
+        return res.status(403).send({ message: 'Нельзя удалить не свою карточку' });
+      }
+
+      return Card.findByIdAndRemove(req.params._id)
+        .then(() => res.send({ data: card }))
+        .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    });
 };
 
 module.exports.likeCard = (req, res) => {

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
 const { JWT_SECRET } = process.env;
 
 const handleAuthError = (res) => {
@@ -8,9 +9,7 @@ const handleAuthError = (res) => {
     .send({ message: 'Необходима авторизация' });
 };
 
-const extractBearerToken = (header) => {
-  return header.replace('Bearer ', '');
-};
+const extractBearerToken = (header) => header.replace('Bearer ', '');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -33,5 +32,5 @@ module.exports = (req, res, next) => {
 
   req.user = payload;
 
-  next();
+  return next();
 };
