@@ -1,10 +1,3 @@
-/*
-При подключение сертификата при выборе домена происходит ошибка: "An unexpected error occurred:
-There were too many requests of a given type ::
-Error creating new order :: too many certificates already issued for: nomoreparties.co:
-see https://letsencrypt.org/docs/rate-limits/". Насколько я понимаю достигнут лимит на сертификаты nomoreparties.co.
-Поэтому сделать сертификат сделать не удалось.
-*/
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
