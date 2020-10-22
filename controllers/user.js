@@ -24,8 +24,11 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res) => {
+  const name = 'default';
+  const about = 'default';
+  const avatar = 'default';
   const {
-    name = 'default', about = 'default', avatar = 'default', email, password,
+    email, password,
   } = req.body;
   const regExp = /[0-9a-zA-Z!@#$%^&*]{6,}/g;
   if (!password.match(regExp)) {

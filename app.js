@@ -49,6 +49,11 @@ app.post('/signup', celebrate({
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
 
+app.use('*', (req, res) => {
+  res.status(404);
+  res.send({ message: 'Запрашиваемый ресурс не найден' });
+});
+
 app.use(errorLogger);
 
 app.use(errors());
