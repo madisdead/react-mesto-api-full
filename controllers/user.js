@@ -24,8 +24,11 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res) => {
+  const name = 'default';
+  const about = 'default';
+  const avatar = 'https://kaskad.tv/images/2020/foto_zhak_iv_kusto__-_interesnie_fakti_20190810_2078596433.jpg';
   const {
-    name = 'default', about = 'default', avatar = 'https://kaskad.tv/images/2020/foto_zhak_iv_kusto__-_interesnie_fakti_20190810_2078596433.jpg', email, password,
+    email, password,
   } = req.body;
   const regExp = /[0-9a-zA-Z!@#$%^&*]{6,}/g;
   if (!password.match(regExp)) {
