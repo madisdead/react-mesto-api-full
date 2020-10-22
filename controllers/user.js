@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 require('dotenv').config();
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET = 'some-key' } = process.env;
 const NotFoundError = require('../errors/not-found-err.js');
 
 module.exports.getUsers = (req, res) => {
@@ -25,7 +25,7 @@ module.exports.getUser = (req, res, next) => {
 
 module.exports.createUser = (req, res) => {
   const {
-    name, about, avatar, email, password,
+    name = 'default', about = 'default', avatar = 'default', email, password,
   } = req.body;
   const regExp = /[0-9a-zA-Z!@#$%^&*]{6,}/g;
   if (!password.match(regExp)) {

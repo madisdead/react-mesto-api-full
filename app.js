@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
 const routerUsers = require('./routes/users.js');
 const routerCards = require('./routes/cards.js');
 const { createUser, login } = require('./controllers/user');
@@ -29,8 +30,21 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().min(2),
+    password: Joi.string().required().min(6),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required().min(2).pattern(/^(http[s]?:\/\/)+([\da-z?$%&_/]+)#?/),
+    about: Joi.string().required().min(2),
+    email: Joi.string().required().min(2),
+    password: Joi.string().required().min(6),
+  }),
+}), createUser);
 
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
