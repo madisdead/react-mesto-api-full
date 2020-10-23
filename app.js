@@ -48,7 +48,7 @@ app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
 
 app.use('*', (req, res, next) => {
-  const error = new NotFoundError('Запрашиваемый ресурс не найден');
+  const error = new NotFoundError('Запрашиваемый ресурс не найденн');
 
   next(error);
 });
