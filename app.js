@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
@@ -10,10 +11,25 @@ const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err.js');
 
+const whiteList = [
+  'https://tarakanov.students.nomoreparties.space',
+  'http://tarakanov.students.nomoreparties.space',
+  'https://www.tarakanov.students.nomoreparties.space',
+  'http://www.tarakanov.students.nomoreparties.space',
+];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whiteList.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
 const { PORT = 3000 } = process.env;
 
 const app = express();
-
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -46,14 +62,6 @@ app.post('/signup', celebrate({
 
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://tarakanov.students.nomoreparties.space');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-  res.status(204).send();
-  next();
-});
 
 app.use('*', (req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');
