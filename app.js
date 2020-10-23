@@ -57,6 +57,14 @@ app.use(errorLogger);
 
 app.use(errors());
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://tarakanov.students.nomoreparties.space');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+  res.status(204).send();
+  next();
+});
+
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
@@ -68,14 +76,6 @@ app.use((err, req, res, next) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
-});
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://tarakanov.students.nomoreparties.space');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-  res.status(204).send();
-  next();
 });
 
 app.listen(PORT, () => {
