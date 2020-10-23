@@ -8,6 +8,7 @@ const routerCards = require('./routes/cards.js');
 const { createUser, login } = require('./controllers/user');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const NotFoundError = require('./errors/not-found-err.js');
 
 const { PORT = 3000 } = process.env;
 
@@ -38,27 +39,26 @@ app.post('/signin', celebrate({
 }), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().required().min(2).pattern(/^(http[s]?:\/\/)+([\da-z?$%&_/]+)#?/),
-    about: Joi.string().required().min(2),
     email: Joi.string().required().min(2),
-    password: Joi.string().required().min(6),
+    password: Joi.string().required().min(6).pattern(/[0-9a-zA-Z!@#$%^&*]{6,}/),
   }),
 }), createUser);
 
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
 
-app.use('*', (req, res) => {
-  res.status(404);
-  res.send({ message: 'Запрашиваемый ресурс не найден' });
+app.use('*', (req, res, next) => {
+  const error = new NotFoundError('Запрашиваемый ресурс не найден');
+
+  next(error);
 });
 
 app.use(errorLogger);
 
 app.use(errors());
 
-app.use((err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
   res

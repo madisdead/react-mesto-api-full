@@ -5,11 +5,19 @@ require('dotenv').config();
 
 const { JWT_SECRET = 'some-key' } = process.env;
 const NotFoundError = require('../errors/not-found-err.js');
+const RequestError = require('../errors/request-err.js');
+const AuthError = require('../errors/auth-err.js');
+const ServerError = require('../errors/server-err.js');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((users) => {
+      if (!users) {
+        throw new ServerError('Ошибка сервера');
+      }
+      res.send({ data: users });
+    })
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -23,17 +31,13 @@ module.exports.getUser = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const name = 'default';
   const about = 'default';
   const avatar = 'https://kaskad.tv/images/2020/foto_zhak_iv_kusto__-_interesnie_fakti_20190810_2078596433.jpg';
   const {
     email, password,
   } = req.body;
-  const regExp = /[0-9a-zA-Z!@#$%^&*]{6,}/g;
-  if (!password.match(regExp)) {
-    return res.status(400).send({ message: 'Недопустимый пароль' });
-  }
   return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -43,6 +47,9 @@ module.exports.createUser = (req, res) => {
       password: hash,
     })
       .then((user) => {
+        if (!user) {
+          throw new NotFoundError('Некорректные данные');
+        }
         res.status(201).send({
           name: user.name,
           about: user.about,
@@ -52,15 +59,17 @@ module.exports.createUser = (req, res) => {
       })
       .catch((err) => {
         if (err.name === 'MongoError' && err.code === 11000) {
-          res.status(409).send({ message: 'Пользователь с данным email уже существует' });
-          return;
+          const error = new Error('Пользователь с данным email уже существует');
+          error.statusCode = 409;
+
+          next(error);
         }
 
-        res.status(400).send({ message: 'Некорректные данные' });
+        next(err);
       }));
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     req.body,
@@ -69,11 +78,16 @@ module.exports.updateUser = (req, res) => {
       runValidators: true,
     },
   )
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(400).send({ message: 'Некорректные данные' }));
+    .then((user) => {
+      if (!user) {
+        throw new RequestError('Некорректные данные');
+      }
+      res.send({ data: user });
+    })
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     req.body,
@@ -82,32 +96,33 @@ module.exports.updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(400).send({ message: 'Некорректные данные' }));
+    .then((user) => {
+      if (!user) {
+        throw new RequestError('Некорректные данные');
+      }
+      res.send({ data: user });
+    })
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        throw new AuthError('Неправильные почта или пароль');
       }
-
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неправильные почта или пароль'));
+            throw new AuthError('Неправильные почта или пароль');
           }
           return res.send({
             token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
           });
-        });
+        })
+        .catch(next);
     })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
-    });
+    .catch(next);
 };

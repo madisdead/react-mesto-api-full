@@ -1,12 +1,20 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err.js');
+const RequestError = require('../errors/request-err.js');
+const ServerError = require('../errors/server-err.js');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((cards) => {
+      if (!cards) {
+        throw new ServerError('Ошибка на сервере');
+      }
+      res.send({ data: cards });
+    })
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const id = req.user._id;
   Card.create({
@@ -14,38 +22,65 @@ module.exports.createCard = (req, res) => {
     link,
     owner: id,
   })
-    .then((card) => res.status(201).send({ data: card }))
-    .catch(() => res.status(400).send({ message: 'Некорректные данные' }));
+    .then((card) => {
+      if (!card) {
+        throw new RequestError('Некорректные данные');
+      }
+
+      res.status(201).send({ data: card });
+    })
+    .catch(next);
 };
 
-module.exports.removeCard = (req, res) => {
+module.exports.removeCard = (req, res, next) => {
   Card.findById(req.params._id)
     .then((card) => {
       if (card.owner !== req.user._id) {
-        return res.status(403).send({ message: 'Нельзя удалить не свою карточку' });
-      }
+        const err = new Error('Нельзя удалить не свою карточку');
+        err.statusCode = 403;
 
-      return Card.findByIdAndRemove(req.params._id)
-        .then(() => res.send({ data: card }))
-        .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
-    });
+        next(err);
+      }
+      Card.findByIdAndRemove(req.params._id)
+        .then((result) => {
+          if (result.ok) {
+            res.send({ data: card });
+          } else {
+            throw new ServerError('Произошла ошибка');
+          }
+        })
+        .catch(next);
+    })
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then(() => res.send({ message: 'Вы поставили лайк' }))
-    .catch(() => res.status(404).send({ message: 'Карточка с данным ID не найдена' }));
+    .then((result) => {
+      if (result.ok) {
+        res.send({ message: 'Вы поставили лайк' });
+      } else {
+        throw new NotFoundError('Карточка с данным ID не найдена');
+      }
+    })
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
   )
-    .then(() => res.send({ message: 'Вы убрали лайк' }))
-    .catch(() => res.status(404).send({ message: 'Карточка с данным ID не найдена' }));
+    .then((result) => {
+      if (result.ok) {
+        res.send({ message: 'Вы убрали лайк' });
+      } else {
+        throw new NotFoundError('Карточка с данным ID не найдена');
+      }
+    })
+    .catch(next);
 };
