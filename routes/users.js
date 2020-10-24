@@ -1,19 +1,18 @@
 const routerUsers = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const {
-  getUsers, getUser, updateUser, updateAvatar,
+  getUsers, getUser, getUserById, updateUser, updateAvatar,
 } = require('../controllers/user');
-const auth = require('../middlewares/auth');
 
 routerUsers.get('/', getUsers);
 
-routerUsers.get('/me', auth);
+routerUsers.get('/me', getUser);
 
 routerUsers.get('/:id', celebrate({
   params: Joi.object().keys({
-    _id: Joi.string().alphanum().length(24).hex(),
+    id: Joi.string().alphanum().length(24).hex(),
   }),
-}), getUser);
+}), getUserById);
 
 routerUsers.patch('/me', celebrate({
   body: Joi.object().keys({
@@ -24,7 +23,7 @@ routerUsers.patch('/me', celebrate({
 
 routerUsers.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    link: Joi.string().required().min(2).pattern(/^(http[s]?:\/\/)+([\da-z?$%&_/]+)#?/),
+    avatar: Joi.string().required().min(2).pattern(/^(http[s]?:\/\/)+([\da-z?$%&_/]+)#?/),
   }),
 }), updateAvatar);
 

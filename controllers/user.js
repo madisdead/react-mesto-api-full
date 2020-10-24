@@ -20,13 +20,24 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.getUser = (req, res, next) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Нет пользователя с таким id');
       }
       res.send({ data: user });
+    })
+    .catch(next);
+};
+
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.user)
+    .then((user) => {
+      if (!user) {
+        throw new AuthError('Необходима авторизация');
+      }
+      res.send(user);
     })
     .catch(next);
 };
@@ -82,7 +93,7 @@ module.exports.updateUser = (req, res, next) => {
       if (!user) {
         throw new RequestError('Некорректные данные');
       }
-      res.send({ data: user });
+      res.send(user);
     })
     .catch(next);
 };
@@ -100,7 +111,7 @@ module.exports.updateAvatar = (req, res, next) => {
       if (!user) {
         throw new RequestError('Некорректные данные');
       }
-      res.send({ data: user });
+      res.send(user);
     })
     .catch(next);
 };

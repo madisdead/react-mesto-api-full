@@ -13,21 +13,21 @@ routerCards.post('/', celebrate({
   }),
 }), createCard);
 
-routerCards.delete('/:_id', celebrate({
+routerCards.delete('/:id', celebrate({
   params: Joi.object().keys({
     id: Joi.string().alphanum().length(24).hex(),
   }),
 }), removeCard);
 
-routerCards.put('/:cardId/likes', celebrate({
+routerCards.put('/likes/:cardId', celebrate({
   params: Joi.object().keys({
-    _id: Joi.string().alphanum().length(24).hex(),
+    cardId: Joi.string().alphanum().length(24).hex(),
   }),
 }), likeCard);
 
-routerCards.delete('/:cardId/likes', celebrate({
+routerCards.delete('/likes/:cardId', celebrate({
   params: Joi.object().keys({
-    _id: Joi.string().alphanum().length(24).hex(),
+    cardId: Joi.string().alphanum().length(24).hex(),
   }),
 }), dislikeCard);
 

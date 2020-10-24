@@ -9,7 +9,7 @@ module.exports.getCards = (req, res, next) => {
       if (!cards) {
         throw new ServerError('Ошибка на сервере');
       }
-      res.send({ data: cards });
+      res.send(cards);
     })
     .catch(next);
 };
@@ -27,27 +27,26 @@ module.exports.createCard = (req, res, next) => {
         throw new RequestError('Некорректные данные');
       }
 
-      res.status(201).send({ data: card });
+      res.status(201).send(card);
     })
     .catch(next);
 };
 
 module.exports.removeCard = (req, res, next) => {
-  Card.findById(req.params._id)
+  Card.findById(req.params.id)
     .then((card) => {
-      if (card.owner !== req.user._id) {
+      if (String(card.owner) !== req.user._id) {
         const err = new Error('Нельзя удалить не свою карточку');
         err.statusCode = 403;
 
         next(err);
       }
-      Card.findByIdAndRemove(req.params._id)
+      Card.findByIdAndRemove(card._id)
         .then((result) => {
-          if (result.ok) {
-            res.send({ data: card });
-          } else {
+          if (!result) {
             throw new ServerError('Произошла ошибка');
           }
+          res.send(card);
         })
         .catch(next);
     })
@@ -61,11 +60,10 @@ module.exports.likeCard = (req, res, next) => {
     { new: true },
   )
     .then((result) => {
-      if (result.ok) {
-        res.send({ message: 'Вы поставили лайк' });
-      } else {
+      if (!result) {
         throw new NotFoundError('Карточка с данным ID не найдена');
       }
+      res.send(result);
     })
     .catch(next);
 };
@@ -74,13 +72,14 @@ module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
+    { new: true },
   )
     .then((result) => {
-      if (result.ok) {
-        res.send({ message: 'Вы убрали лайк' });
-      } else {
+      if (!result) {
         throw new NotFoundError('Карточка с данным ID не найдена');
       }
+
+      res.send(result);
     })
     .catch(next);
 };
