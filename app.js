@@ -63,6 +63,8 @@ app.post('/signup', celebrate({
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
 
+app.use(cors(corsOptions));
+
 app.use('*', (req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');
 
@@ -85,8 +87,6 @@ app.use((err, req, res, next) => {
         : message,
     });
 });
-
-app.use(cors(corsOptions));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
