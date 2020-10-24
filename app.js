@@ -40,6 +40,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(requestLogger);
+app.use(cors(corsOptions));
 
 app.get('/crash-test', () => {
   setTimeout(() => {
@@ -62,8 +63,6 @@ app.post('/signup', celebrate({
 
 app.use('/users', auth, routerUsers);
 app.use('/cards', auth, routerCards);
-
-app.use(cors(corsOptions));
 
 app.use('*', (req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');
