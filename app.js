@@ -16,7 +16,7 @@ const whiteList = [
   'http://tarakanov.students.nomoreparties.space',
   'https://www.tarakanov.students.nomoreparties.space',
   'http://www.tarakanov.students.nomoreparties.space',
-  'http://localhost:3000/',
+  'http://localhost:3000',
 ];
 const corsOptions = {
   origin: (origin, callback) => {
