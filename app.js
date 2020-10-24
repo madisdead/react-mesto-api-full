@@ -16,7 +16,7 @@ const whiteList = [
   'http://tarakanov.students.nomoreparties.space',
   'https://www.tarakanov.students.nomoreparties.space',
   'http://www.tarakanov.students.nomoreparties.space',
-  'http://localhost:3000/',
+  'http://localhost:3000',
 ];
 const corsOptions = {
   origin: (origin, callback) => {
@@ -30,7 +30,6 @@ const corsOptions = {
 const { PORT = 3000 } = process.env;
 
 const app = express();
-app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -86,6 +85,8 @@ app.use((err, req, res, next) => {
         : message,
     });
 });
+
+app.use(cors(corsOptions));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
