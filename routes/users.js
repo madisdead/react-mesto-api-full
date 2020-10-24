@@ -3,8 +3,11 @@ const { celebrate, Joi } = require('celebrate');
 const {
   getUsers, getUser, updateUser, updateAvatar,
 } = require('../controllers/user');
+const auth = require('../middlewares/auth');
 
 routerUsers.get('/', getUsers);
+
+routerUsers.get('/me', auth);
 
 routerUsers.get('/:id', celebrate({
   params: Joi.object().keys({
