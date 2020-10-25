@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     validate: {
-      validator: (v) => /^(http[s]?:\/\/)+([\da-z?$%&_/]+)#?/.test(v),
+      validator: (v) => /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?#?$/.test(v),
     },
     required: true,
   },
